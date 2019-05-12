@@ -28,12 +28,15 @@ module SimplifyApi
   end
 
   def initialize(opts)
+    opts = {self.class.attributes.first[0] => opts} if opts.class == Array
     opts.each_pair do |k, v|
       case v
       when Hash
         v = self.class.attributes[k.to_sym][:type].new(v)
       when Array
-        v.collect! { |i| self.class.attributes[k.to_sym][:params][:array_type].new(i) }
+        v.collect! do |i|
+          self.class.attributes[k.to_sym][:params][:array_type].new(i)
+        end
       end
       create_and_set_instance_variable("#{k}", v)
     end
@@ -50,8 +53,13 @@ module SimplifyApi
       k = /\@(.*)/.match(i.to_s)[1].to_sym
       v = instance_variable_get(i)
       if v.class == Array then
-        h[k] = []
-        v.each {|a| h[k] << (a.respond_to?(:to_h) ? a.to_h : a) }
+        r = []
+        v.each {|a| r << (a.respond_to?(:to_h) ? a.to_h : a) }
+        if self.class.attributes[k][:params][:invisible] then
+          h = r
+        else
+          h[k] = r
+        end
       else
         h[k] = v.respond_to?(:to_h) ? v.to_h : v
       end
