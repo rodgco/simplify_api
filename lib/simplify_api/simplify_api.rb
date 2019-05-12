@@ -31,9 +31,9 @@ module SimplifyApi
     opts.each_pair do |k, v|
       case v
       when Hash
-        v = self.class.attributes[k][:type].new(v)
+        v = self.class.attributes[k.to_sym][:type].new(v)
       when Array
-        v.collect! { |i| self.class.attributes[k][:params][:array_type].new(i) }
+        v.collect! { |i| self.class.attributes[k.to_sym][:params][:array_type].new(i) }
       end
       create_and_set_instance_variable("#{k}", v)
     end
