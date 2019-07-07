@@ -92,14 +92,46 @@ describe SimplifyApi do
           "English",
           "German" ]
       }))
-
-      puts "JSON: #{json_value}"
       subject = Test.new(json_value)
 
       expect(subject.name).to eq "John Doe"
       expect(subject.country).to eq "USA"
       expect(subject.email).to eq "joedoe@mailinator.com"
       expect(subject.languages).to have(2).languages
+    end
+  end
+
+  describe "with nested classes" do
+    before(:all) do
+      class Location
+        include SimplifyApi
+        attribute :title, String, mandatory: true
+        attribute :address, String
+        attribute :city, String
+      end
+
+      class User
+        include SimplifyApi
+        attribute :name, String, mandatory: true
+        attribute :locations, [Location]
+      end
+    end
+
+    it "should instatiate nested classes from JSON" do
+      json_value = JSON.parse(%q({ 
+        "name": "John Doe", 
+        "locations": [
+          { "title": "Home", "address": "Elm Street", "city": "New York" },
+          { "title": "Office", "address": "White House Street", "city": "Washington DC" }
+        ]
+      }))
+      subject = User.new(json_value)
+
+      expect(subject.name).to eq "John Doe"
+      expect(subject.locations).to have(2).locations
+      expect(subject.locations[0].class).to be Location
+      expect(subject.locations[0].title).to eq "Home"
+      expect(subject.locations[1].title).to eq "Office"
     end
   end
 end
