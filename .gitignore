@@ -1,5 +1,7 @@
 /.bundle/
 /Gemfile.lock
+/.ruby-gemset
+/.ruby-version
 /spec/reports/
 /tmp/
 /vendor/
