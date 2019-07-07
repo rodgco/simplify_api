@@ -23,7 +23,7 @@ module SimplifyApi
 
       attributes[attr] = {
         name: attr.to_s,
-        type: type.class == Class ? type : (type.class == Array ? Array : Object),
+        type: { Class => type, Array => Array }[type.class] || Object,
         params: args
       }
       attributes[attr]
