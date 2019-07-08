@@ -40,7 +40,7 @@ describe SimplifyApi do
     it 'should fullfil class description' do
       subject = Test.new(name: 'João da Silva')
 
-      expect{ Test.new }.to raise_error ArgumentError
+      expect(Test.new.valid?).to be false
       expect(subject).to respond_to :name
       expect(subject).to respond_to :surname
       expect(subject).to respond_to :country
