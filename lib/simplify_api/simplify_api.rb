@@ -67,6 +67,7 @@ module SimplifyApi
   #   Called in case an unexisting method is called.
   #
   #   To an assignment call it will create the instance variable.
+  #   To an getter of a specified attribute, return the default value.
   #   Every other call will be passed to super.
   #
   def method_missing(method_name, *args, &block)
@@ -82,7 +83,7 @@ module SimplifyApi
   # respond_to_mssing?
   #   Called to check if an instance respond to a message.
   #
-  #   It should respond to any assignment call.
+  #   It should respond to any defined attribute (getter & setter).
   #   Every other type should be passed to super.
   #
   def respond_to_missing?(method_name, *args)
