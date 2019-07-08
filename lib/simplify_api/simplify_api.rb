@@ -26,25 +26,12 @@ module SimplifyApi
         type: { Class => type, Array => Array }[type.class] || Object,
         params: args
       }
-      attributes[attr]
+      attr
     end
   end
 
   def initialize(opts = {})
     opts.symbolize_keys!
-    # opts = { klass_attr.first[0] => opts } if opts.class == Array
-    klass_attr.each_pair do |name, spec|
-      params = spec[:params]
-      if opts.key?(name)
-        value = process_value(name, opts[name])
-        opts.delete(name)
-      else
-        value = params[:default]
-      end
-      raise ArgumentError, "Missing mandatory attribute => #{name}" if params[:mandatory] & value.nil?
-
-      create_and_set_instance_variable(name.to_s, value)
-    end
 
     opts.each_pair do |key, value|
       expanded_value = process_value(key, value)
@@ -83,10 +70,11 @@ module SimplifyApi
   #   Every other call will be passed to super.
   #
   def method_missing(method_name, *args, &block)
-    case method_name
-    when /(.*)\=$/
+    if method_name.match(/(.*)\=$/)
       create_and_set_instance_variable($1.to_s, args[0])
     else
+      return klass_attr.dig(method_name.to_sym, :params, :default) if klass_attr.key?(method_name.to_sym)
+
       super(method_name, args, block)
     end
   end
@@ -98,12 +86,19 @@ module SimplifyApi
   #   Every other type should be passed to super.
   #
   def respond_to_missing?(method_name, *args)
-    case method_name
-    when /(.*)\=$/
-      true # always respond to assignment methods
-    else
-      super(method_name, args)
+    return true if method_name.match(/(.*)\=$/)
+
+    return true if klass_attr.key?(method_name.to_sym)
+
+    super(method_name, args)
+  end
+
+  def valid?
+    klass_attr.each_pair do |key, value|
+      puts "Key: #{key}"
+      return false if value.dig(:params, :mandatory) & !instance_variable_defined?("@#{key.to_s}".to_sym)
     end
+    true
   end
 
   private
