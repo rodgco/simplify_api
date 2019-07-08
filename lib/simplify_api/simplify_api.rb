@@ -125,6 +125,7 @@ module SimplifyApi
   end
 
   def valid_value?(name, value)
+    return true if value.nil?
     return true unless klass_attr[name.to_sym][:params].key?(:values)
 
     valid_values = klass_attr[name.to_sym][:params][:values]
